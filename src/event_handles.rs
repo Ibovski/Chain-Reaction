@@ -3,7 +3,7 @@ use ggez::graphics::{self};
 use ggez::event::{self, EventHandler};
 use crate::entities::Player;
 use crate::game_constants;
-use crate::grid::{Grid};
+use crate::grid::Grid;
 
 pub struct MyGame {
     grid: Grid,
@@ -23,6 +23,7 @@ impl MyGame {
 
 impl EventHandler for MyGame {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
+        self.grid.update();
         Ok(())
     }
     fn mouse_button_up_event(&mut self, _ctx: &mut Context, 
@@ -32,8 +33,10 @@ impl EventHandler for MyGame {
         pos_y > game_constants::MARGIN && pos_y < game_constants::SCREEN_HEIGHT - game_constants::MARGIN {
             let row = ((pos_x - game_constants::MARGIN) / game_constants::CELL_WIDTH) as usize;
             let column = ((pos_y - game_constants::MARGIN) / game_constants::CELL_HEIGHT) as usize;
-            self.grid.change_cell_state(row, column, self.players[self.turn].as_ref().expect("No player in this turn "));
-            self.turn = (self.turn + 1) % 2;
+            let success_turn = self.grid.change_cell_state(row, column, self.players[self.turn].as_ref().expect("No player in this turn "));
+            if success_turn {
+                self.turn = (self.turn + 1) % 2;
+            }
         }
         Ok(())
     }
