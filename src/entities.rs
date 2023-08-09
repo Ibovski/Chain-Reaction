@@ -1,6 +1,6 @@
 use ggez::{graphics::{Image}, Context, GameResult, mint::Point2};
 
-use crate::{game_constants, helper};
+use crate::{game_constants::{self}, helper};
 
 static mut PLAYERS_ID: i32 = -1;
 
@@ -36,15 +36,16 @@ impl Player {
                 id: unsafe { PLAYERS_ID }})  
     }
 
-    pub fn update(&mut self, seconds: f32, triggered: &mut bool) {
+    pub fn update(&mut self, triggered: &mut bool) {
         match self.dir {
-            Direction::LEFT => self.pos.x += 1.0,
-            Direction::RIGHT => self.pos.x -= 1.0,
-            Direction::UP => self.pos.y += 1.0,
-            Direction::DOWN => self.pos.y -= 1.0,
+            Direction::LEFT => self.pos.x += game_constants::PLAYER_SPEED,
+            Direction::RIGHT => self.pos.x -= game_constants::PLAYER_SPEED,
+            Direction::UP => self.pos.y += game_constants::PLAYER_SPEED,
+            Direction::DOWN => self.pos.y -= game_constants::PLAYER_SPEED,
         }
        
-         if helper::approximately_eq(self.pos.x, self.go_to_pos.x, 1.0) && helper::approximately_eq(self.pos.y, self.go_to_pos.y, 1.0)  {
+         if helper::approximately_eq(self.pos.x, self.go_to_pos.x, 1.0) && 
+         helper::approximately_eq(self.pos.y, self.go_to_pos.y, 1.0)  {
             self.speed = 0.0;
             *triggered = false;
         }

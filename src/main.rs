@@ -4,7 +4,6 @@ use hello_ggez::event_handles::MyGame;
 fn main() {
 
     //Make a Context.
-    
     let c = conf::Conf::new().
     window_mode(WindowMode {
             width: crate::game_constants::SCREEN_WIDTH,

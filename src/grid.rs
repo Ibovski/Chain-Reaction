@@ -1,6 +1,6 @@
-use ggez::{graphics::{Mesh, DrawMode, Rect, Color, self, DrawParam, Transform}, Context, GameResult, mint::{Point2, Vector2}};
+use ggez::{graphics::{Mesh, DrawMode, Rect, Color, self, DrawParam, Transform, Image}, Context, GameResult, mint::{Point2, Vector2}};
 
-use crate::{game_constants, entities::{Player, Direction}};
+use crate::{game_constants, entities::{Player, Direction}, mapper::{self, pos_to_row_col}};
 enum ImageState {
     Default,
     First,
@@ -33,12 +33,13 @@ impl ImageState {
 struct Cell {
     cell_mesh: Mesh,
     state: ImageState,
+    pos: Point2<f32>,
     players: Vec<Player>,
     triggered: bool,
 }
 
 impl Cell {
-    fn new(ctx: &mut Context) -> GameResult<Cell> {
+    fn new(ctx: &mut Context, pos: Point2<f32>) -> GameResult<Cell> {
         
         let cell_mesh = Mesh::new_rectangle(
             ctx,
@@ -49,24 +50,28 @@ impl Cell {
         Ok(Cell{
             cell_mesh, 
             state: ImageState::Default,
+            pos,
             players: Vec::new(),
             triggered: false})
     }
-    fn update(&mut self) {
+    fn has_triggered(&mut self) -> bool {
        
        if self.triggered == true {
             let temp = &mut self.players;
             for player in temp {
-                player.set_speed(1.1);
-                player.update(5.0, &mut self.triggered);
+                player.set_speed(game_constants::PLAYER_SPEED);
+                player.update(&mut self.triggered);
+            }
+            if self.triggered == false {
+                return true;
             }
         }
+        false 
         
     }
-    fn draw_cell(&mut self, canvas: &mut graphics::Canvas, ctx: &mut Context, dst: Point2<f32>) -> GameResult<()>{
+    fn draw_cell(&mut self, canvas: &mut graphics::Canvas, ctx: &mut Context) -> GameResult<()>{
         if self.state.to_int() != 0 {
             
-           // temp.set_rotation(new_rotation);
             let temp = &self.players;
           //  let mut new_rotation = ctx.time.delta().as_secs_f32() * 3.0 + player.get_rotation();
             for player in temp {
@@ -78,7 +83,7 @@ impl Cell {
                 .scale(Vector2{x: 0.6, y: 0.6}));   
             }
         }
-        canvas.draw(&self.cell_mesh, DrawParam::default().dest(dst));
+        canvas.draw(&self.cell_mesh, DrawParam::default().dest(self.pos));
         Ok(())
     }
 
@@ -118,6 +123,7 @@ impl Cell {
             }
         }
     }
+
 }
 
 pub struct Grid {
@@ -127,10 +133,11 @@ pub struct Grid {
 impl Grid {
     pub fn create(ctx: &mut Context) -> GameResult<Grid> {
         let mut grid:Vec<Vec<Cell>>= Vec::new();
-        for i in 0..game_constants::TABLE_ROWS {
+        for row in 0..game_constants::TABLE_ROWS {
             grid.push(Vec::new());
-            for _j in 0..game_constants::TABLE_COLUMNS {
-                grid[i].push(Cell::new(ctx)?);
+            for column in 0..game_constants::TABLE_COLUMNS {
+                let pos = mapper::row_col_to_pos(row, column);
+                grid[row].push(Cell::new(ctx, pos)?);
             }
         }
         Ok(Grid{grid})
@@ -139,7 +146,13 @@ impl Grid {
     pub fn update(&mut self ) {
         for row in 0..game_constants::TABLE_ROWS{
             for column in 0..game_constants::TABLE_COLUMNS {
-                self.grid[row][column].update();
+                let triggering = self.grid[row][column].has_triggered();
+                if triggering {
+                    let player = self.grid[row][column].players[0].clone();
+                    self.update_neighbours(row, column, player);
+                    self.grid[row][column].state = ImageState::Default;
+                    self.grid[row][column].players.clear();
+                }
             }
         } 
     }
@@ -147,20 +160,16 @@ impl Grid {
     pub fn draw_grid(&mut self, canvas: &mut graphics::Canvas, ctx: &mut Context) -> GameResult<()> {
         for row in 0..game_constants::TABLE_ROWS{
             for column in 0..game_constants::TABLE_COLUMNS {
-                let pos_x = (row  as f32) * game_constants::CELL_WIDTH + game_constants::MARGIN;
-                let pos_y = (column as f32) * game_constants::CELL_HEIGHT + game_constants::MARGIN;
-                
-                let _ = self.grid[row][column].draw_cell(canvas, ctx, Point2{x: pos_x, y: pos_y});
+                let _ = self.grid[row][column].draw_cell(canvas, ctx);
             }
         }
         Ok(())
     }
 
-    pub fn change_cell_state(&mut self, row: usize, column: usize, players: &Player) -> bool{
-        let pos_x = (row  as f32) * game_constants::CELL_WIDTH + game_constants::MARGIN;
-        let pos_y = (column as f32) * game_constants::CELL_HEIGHT + game_constants::MARGIN;
-        let mut new_player = players.clone();
-        new_player.set_pos(Point2{x: pos_x + 38.0, y: pos_y + 38.0});
+    pub fn change_cell_state(&mut self, row: usize, column: usize, player: &Player) -> bool{
+        let pos = mapper::row_col_to_pos(row, column);
+        let mut new_player = player.clone();
+        new_player.set_pos(Point2{x: pos.x + 38.0, y: pos.y + 38.0});
         let current_state = &self.grid[row][column].state;
         match current_state {
             ImageState::Default => {
@@ -198,5 +207,44 @@ impl Grid {
             self.grid[row][column].trigger(row, column);
         }
         success_turn
+    }
+
+    fn update_neighbours(&mut self, row: usize, column: usize, player: Player) {
+        if row > 0 {
+            let  temp = &mut self.grid[row - 1][column];
+            let new_len = temp.players.len() + 1;
+            temp.players.clear();
+            temp.state = ImageState::Default;
+            for _i in 0..new_len {
+                self.change_cell_state(row - 1, column, &player);
+            } 
+        }
+        if row < game_constants::LAST_ROWCOL_INDEX {
+            let  temp = &mut self.grid[row + 1][column];
+            let new_len = temp.players.len() + 1;
+            temp.players.clear();
+            temp.state = ImageState::Default;
+            for _i in 0..new_len {
+                self.change_cell_state(row + 1, column, &player);
+            } 
+        }
+        if column > 0 {
+            let  temp = &mut self.grid[row][column - 1];
+            let new_len = temp.players.len() + 1;
+            temp.players.clear();
+            temp.state = ImageState::Default;
+            for _i in 0..new_len {
+                self.change_cell_state(row, column - 1, &player);
+            } 
+        }
+        if column < game_constants::LAST_ROWCOL_INDEX {
+            let  temp = &mut self.grid[row][column + 1];
+            let new_len = temp.players.len() + 1;
+            temp.players.clear();
+            temp.state = ImageState::Default;
+            for _i in 0..new_len {
+                self.change_cell_state(row, column + 1, &player);
+            } 
+        }
     }
 }
