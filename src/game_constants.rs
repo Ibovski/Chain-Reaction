@@ -13,4 +13,8 @@ pub const TABLE_COLUMNS: usize = 8;
 pub const LAST_ROWCOL_INDEX: usize = 7;
 
 // PLAYER
-pub const PLAYER_SPEED: f32 = 1.1;
+pub const PLAYER_SPEED: f32 = 1.5;
+
+// IMAGE
+pub const IMAGE_WIDTH: f32 = CELL_WIDTH / 2.0;
+pub const IMAGE_HEIGHT: f32 = CELL_HEIGHT / 2.0;

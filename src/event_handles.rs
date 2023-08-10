@@ -16,13 +16,13 @@ impl MyGame {
         let grid = Grid::create(ctx)?;
         let mut players = Vec::new();
         players.push(Player::from_path(String::from("/pixil-frame-0.png"), ctx));
-        players.push(Player::from_path(String::from("/pixil-frame-1.png"), ctx));
+        players.push(Player::from_path(String::from("/pixil-frame-3.png"), ctx));
         Ok(MyGame {grid,turn: 0, players})
     }
 }
 
 impl EventHandler for MyGame {
-    fn update(&mut self, ctx: &mut Context) -> GameResult {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.grid.update();
         Ok(())
     }
@@ -43,7 +43,7 @@ impl EventHandler for MyGame {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::WHITE);
         
-        let _ = self.grid.draw_grid(&mut canvas, ctx);
+        let _ = self.grid.draw_grid(&mut canvas);
         
         canvas.finish(ctx)?;
         Ok(())

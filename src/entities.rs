@@ -28,7 +28,7 @@ impl Player {
         let image = Image::from_path(ctx, 
             path)?;
             unsafe { PLAYERS_ID += 1 };
-            Ok(Player{texture: image, rotation: 0.775, 
+            Ok(Player{texture: image, rotation: 0.0, 
                 pos: Point2{x: 0.0, y: 0.0},
                 go_to_pos: Point2{x: 0.0, y: 0.0},
                 speed: 0.0,
