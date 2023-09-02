@@ -2,7 +2,7 @@
 pub const SCREEN_WIDTH: f32 = 620.0;
 pub const SCREEN_HEIGHT: f32 = 620.0;
 pub const MARGIN: f32 = 10.0;
-
+pub const PLAYER_COUNT: usize = 2;
 // CELL
 pub const CELL_WIDTH: f32 = 75.0;
 pub const CELL_HEIGHT: f32 = 75.0;
@@ -18,3 +18,6 @@ pub const PLAYER_SPEED: f32 = 1.5;
 // IMAGE
 pub const IMAGE_WIDTH: f32 = CELL_WIDTH / 2.0;
 pub const IMAGE_HEIGHT: f32 = CELL_HEIGHT / 2.0;
+
+// directory
+pub const DIRECTORY: &str = r"D:\Programming\Rust\BeeBattle\target\debug\resources";

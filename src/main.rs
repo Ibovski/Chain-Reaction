@@ -1,22 +1,24 @@
-use ggez::{conf::{self, WindowMode}, ContextBuilder, event};
-use hello_ggez::game_constants;
-use hello_ggez::event_handles::MyGame;
+use ggez::{conf::{self, WindowMode, WindowSetup}, ContextBuilder, event};
+use bee_battle::game_constants;
+use bee_battle::event_handlers::GameConfiguration;
 fn main() {
 
-    //Make a Context.
     let c = conf::Conf::new().
     window_mode(WindowMode {
             width: crate::game_constants::SCREEN_WIDTH,
             height: game_constants::SCREEN_HEIGHT,
             ..Default::default()
         });
-    let (mut ctx, event_loop) = ContextBuilder::new("hello_ggez", "awesome_person")
+    let (mut ctx, event_loop) = ContextBuilder::new("Bee_Battles", "Adriyan Ibovski")
     .default_conf(c)
+    .window_setup(WindowSetup{
+        title: "BeeBattle".to_string(),
+        ..Default::default()
+    })
     .build()
     .unwrap();
 
-    let game = MyGame::new(&mut ctx).unwrap();
+    let game = GameConfiguration::new(&mut ctx).unwrap();
 
-    // Run!
     event::run(ctx, event_loop, game);
 }

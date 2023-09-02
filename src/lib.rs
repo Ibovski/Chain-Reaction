@@ -1,4 +1,4 @@
-pub mod event_handles;
+pub mod event_handlers;
 pub mod grid;
 pub mod game_constants;
 pub mod entities;
