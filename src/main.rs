@@ -3,14 +3,14 @@ use bee_battle::game_constants;
 use bee_battle::event_handlers::GameConfiguration;
 fn main() {
 
-    let c = conf::Conf::new().
+    let config = conf::Conf::new().
     window_mode(WindowMode {
-            width: crate::game_constants::SCREEN_WIDTH,
+            width: game_constants::SCREEN_WIDTH,
             height: game_constants::SCREEN_HEIGHT,
             ..Default::default()
         });
     let (mut ctx, event_loop) = ContextBuilder::new("Bee_Battles", "Adriyan Ibovski")
-    .default_conf(c)
+    .default_conf(config)
     .window_setup(WindowSetup{
         title: "BeeBattle".to_string(),
         ..Default::default()

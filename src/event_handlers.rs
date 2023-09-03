@@ -111,7 +111,6 @@ impl GameConfiguration {
      */
     pub fn winner_check(&mut self) {
         let players = self.grid.get_all_players();
-        println!("{:?}", players);
         if self.grid.get_players_count() > 1 {
             if players[0] == 0 {
                 self.winner = 2;
